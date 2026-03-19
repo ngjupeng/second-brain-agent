@@ -1,6 +1,7 @@
 import { IMessageSDK } from "@photon-ai/imessage-kit";
 import { processThought, generateDigest, handleSearch, parseTags } from "./brain.js";
 import { addThought, getThoughtStats } from "./store.js";
+import { getProviderName } from "./llm.js";
 
 // --- Config ---
 // Set your phone number or Apple ID email so the agent only responds to YOU
@@ -12,14 +13,14 @@ if (!MY_IDENTIFIER) {
   process.exit(1);
 }
 
-if (!process.env.ANTHROPIC_API_KEY) {
-  console.error("Set ANTHROPIC_API_KEY env var.");
+if (!process.env.ANTHROPIC_API_KEY && !process.env.GEMINI_API_KEY) {
+  console.error("Set ANTHROPIC_API_KEY or GEMINI_API_KEY env var.");
   process.exit(1);
 }
 
 const sdk = new IMessageSDK({ debug: false });
 
-console.log(`🧠 Second Brain Agent started`);
+console.log(`🧠 Second Brain Agent started (${getProviderName()})`);
 console.log(`   Listening for messages from: ${MY_IDENTIFIER}`);
 console.log(`   Commands: "digest", "search <topic>", "stats", or just text a thought`);
 console.log(`   Press Ctrl+C to stop\n`);

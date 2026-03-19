@@ -1,12 +1,10 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { chat } from "./llm.js";
 import {
   getRecentThoughts,
   searchThoughts,
   getThoughtStats,
   type Thought,
 } from "./store.js";
-
-const client = new Anthropic();
 
 function formatThoughts(thoughts: Thought[]): string {
   return thoughts
@@ -17,17 +15,7 @@ function formatThoughts(thoughts: Thought[]): string {
     .join("\n");
 }
 
-export async function processThought(incomingText: string): Promise<string> {
-  const recentThoughts = getRecentThoughts(30);
-  const previousContext =
-    recentThoughts.length > 0
-      ? formatThoughts(recentThoughts)
-      : "No previous thoughts yet.";
-
-  const response = await client.messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 300,
-    system: `You are a "Second Brain" — an iMessage agent that captures thoughts and makes the user think deeper.
+const THOUGHT_SYSTEM = `You are a "Second Brain" — an iMessage agent that captures thoughts and makes the user think deeper.
 
 Your job:
 1. Acknowledge the thought briefly (1 short sentence max)
@@ -40,18 +28,30 @@ Rules:
 - Don't be generic. Be specific to what they said.
 - If you see a pattern or contradiction with previous thoughts, call it out
 - Never say "great thought" or "interesting" — just get to the point
-- Return 1-3 relevant tags for this thought as the LAST line, formatted as: tags: tag1, tag2, tag3`,
-    messages: [
-      {
-        role: "user",
-        content: `Previous thoughts from this person:\n${previousContext}\n\n---\nNew thought just texted in:\n"${incomingText}"`,
-      },
-    ],
-  });
+- Return 1-3 relevant tags for this thought as the LAST line, formatted as: tags: tag1, tag2, tag3`;
 
-  const text =
-    response.content[0].type === "text" ? response.content[0].text : "";
-  return text;
+const DIGEST_SYSTEM = `You summarize someone's thinking patterns from their captured thoughts. Be insightful, not generic.
+
+Format for iMessage (short paragraphs, no markdown):
+1. What they've been thinking about most (2-3 themes)
+2. Any interesting patterns, contradictions, or evolution in thinking
+3. One connection between thoughts they probably didn't notice
+4. One question to chew on based on everything
+
+Keep it under 6-8 short sentences total. Sound like a sharp friend reviewing their journal.`;
+
+export async function processThought(incomingText: string): Promise<string> {
+  const recentThoughts = getRecentThoughts(30);
+  const previousContext =
+    recentThoughts.length > 0
+      ? formatThoughts(recentThoughts)
+      : "No previous thoughts yet.";
+
+  return chat(
+    THOUGHT_SYSTEM,
+    `Previous thoughts from this person:\n${previousContext}\n\n---\nNew thought just texted in:\n"${incomingText}"`,
+    300
+  );
 }
 
 export async function generateDigest(): Promise<string> {
@@ -62,27 +62,11 @@ export async function generateDigest(): Promise<string> {
     return "No thoughts captured yet. Text me anything — a random idea, something you noticed, a question you can't shake.";
   }
 
-  const response = await client.messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 500,
-    system: `You summarize someone's thinking patterns from their captured thoughts. Be insightful, not generic.
-
-Format for iMessage (short paragraphs, no markdown):
-1. What they've been thinking about most (2-3 themes)
-2. Any interesting patterns, contradictions, or evolution in thinking
-3. One connection between thoughts they probably didn't notice
-4. One question to chew on based on everything
-
-Keep it under 6-8 short sentences total. Sound like a sharp friend reviewing their journal.`,
-    messages: [
-      {
-        role: "user",
-        content: `Stats: ${stats.total} total thoughts, ${stats.thisWeek} this week. Top tags: ${stats.topTags.map(([t, c]) => `${t}(${c})`).join(", ") || "none yet"}\n\nRecent thoughts:\n${formatThoughts(recent)}`,
-      },
-    ],
-  });
-
-  return response.content[0].type === "text" ? response.content[0].text : "";
+  return chat(
+    DIGEST_SYSTEM,
+    `Stats: ${stats.total} total thoughts, ${stats.thisWeek} this week. Top tags: ${stats.topTags.map(([t, c]) => `${t}(${c})`).join(", ") || "none yet"}\n\nRecent thoughts:\n${formatThoughts(recent)}`,
+    500
+  );
 }
 
 export async function handleSearch(query: string): Promise<string> {

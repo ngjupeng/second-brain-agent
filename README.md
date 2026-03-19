@@ -4,7 +4,7 @@ An iMessage agent that captures your raw thoughts throughout the day, connects t
 
 > "I text my half-baked thoughts and my agent connects the dots I missed."
 
-Built with [Photon iMessage Kit](https://github.com/photon-hq/imessage-kit) + Claude API.
+Built with [Photon iMessage Kit](https://github.com/photon-hq/imessage-kit) + Claude or Gemini API.
 
 ## Why
 
@@ -22,14 +22,14 @@ Built with [Photon iMessage Kit](https://github.com/photon-hq/imessage-kit) + Cl
 
 ## Setup
 
-**Requirements:** macOS, Bun, Anthropic API key
+**Requirements:** macOS, Bun, Gemini or Anthropic API key
 
 ```bash
 # Install Bun (if not installed)
 curl -fsSL https://bun.sh/install | bash
 
 # Clone and install
-git clone https://github.com/user/second-brain-agent
+git clone https://github.com/ngjupeng/second-brain-agent
 cd second-brain-agent
 bun install
 
@@ -59,7 +59,7 @@ Then text yourself from another device (or ask a friend to text you) and the age
 
 ```
 Phone (iMessage) → macOS iMessage DB → Watcher (polls every 2s)
-    → Claude API (processes thought, finds connections)
+    → LLM (Claude or Gemini — processes thought, finds connections)
     → brain.json (persistent storage)
     → iMessage reply back to you
 ```
