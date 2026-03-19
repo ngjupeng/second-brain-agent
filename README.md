@@ -63,9 +63,3 @@ Phone (iMessage) → macOS iMessage DB → Watcher (polls every 2s)
     → brain.json (persistent storage)
     → iMessage reply back to you
 ```
-
-## Built for Photon Residency Chapter II
-
-This agent explores the question: *Can an AI make you think better instead of thinking for you?*
-
-Most AI tools replace your thinking. This one catches your raw thoughts in their rawest form — while you're watching a video, walking, in a meeting — and forces you to finish baking them.
