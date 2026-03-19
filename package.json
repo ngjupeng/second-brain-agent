@@ -1,0 +1,14 @@
+{
+  "name": "second-brain-agent",
+  "version": "1.0.0",
+  "description": "iMessage agent that captures your thoughts and connects the dots you missed",
+  "type": "module",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "dev": "bun run --watch src/index.ts"
+  },
+  "dependencies": {
+    "@photon-ai/imessage-kit": "^2.1.2",
+    "@anthropic-ai/sdk": "^0.39.0"
+  }
+}
